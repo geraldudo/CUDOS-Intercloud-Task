@@ -1,100 +1,69 @@
+"use client"
 import Image from "next/image";
+import { useState } from "react";
+import { getGeminiPrediction } from "./utils/gemini";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [symptoms, setSymptoms] = useState("");
+  const [prediction, setPrediction] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const handlePredict = async () => {
+    setLoading(true);
+    setPrediction(null); // Clear previous prediction
+
+    try {
+      const simulatedResponse = await simulateAIPrediction(symptoms);
+      setPrediction(simulatedResponse);
+    } catch (error) {
+      console.error("Error predicting illness:", error);
+      setPrediction("An error occurred during prediction.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const simulateAIPrediction = async (symptoms: string): Promise<string> => {
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate delay
+    const res = await getGeminiPrediction(symptoms)
+    return res
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+      <header className="bg-white dark:bg-gray-800 shadow p-6">
+        <h1 className="text-2xl font-semibold text-center">AI Illness Predictor</h1>
+      </header>
+      <main className="container mx-auto p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Enter Your Symptoms</h2>
+          <textarea
+            className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            rows={4}
+            placeholder="e.g., Fever, cough, headache..."
+            value={symptoms}
+            onChange={(e) => setSymptoms(e.target.value)}
+          ></textarea>
+          <button
+            className={`mt-4 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={handlePredict}
+            disabled={loading}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {loading ? "Predicting..." : "Predict Illness"}
+          </button>
         </div>
+
+        {prediction && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold mb-4">Prediction</h2>
+            <p className="text-gray-700 dark:text-gray-300">{prediction}</p>
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      <footer className="text-center p-4 text-sm text-gray-500 dark:text-gray-400">
+        Disclaimer: This is for informational purposes only and should not be used as a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment.
       </footer>
     </div>
   );
